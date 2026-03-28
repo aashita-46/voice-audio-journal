@@ -1,49 +1,55 @@
 from audio_capture import record_audio, save_chunk
 from transcriber import transcribe_audio
 from summarizer import generate_summary
-from history import save_session
+from history import save_session, print_history
 from voice_auth import register_voice, verify_voice, PASSPHRASE
 
 import os
 
-TRANSCRIPT = ""
-
 os.makedirs("chunks", exist_ok=True)
 
-def run():
-    global TRANSCRIPT
+TRANSCRIPT = ""
 
-    print("🔐 Voice Authentication")
-    print(f"👉 Please say: '{PASSPHRASE}'\n")
 
-    choice = input("Type 'r' to register or 'l' to login: ").lower()
+def authenticate():
+    """Handle voice registration or login. Returns True if authenticated."""
+    print("\n🔐 Voice Authentication")
+    print(f"👉 Please say the passphrase: '{PASSPHRASE}'\n")
 
-    # Record short voice sample
-    print("🎤 Recording for authentication...")
+    choice = input("Type 'r' to register your voice, 'l' to login: ").strip().lower()
+    if choice not in ('r', 'l'):
+        print("❌ Invalid choice.")
+        return False
+
+    print("🎤 Recording voice sample...")
     audio_data = next(record_audio())
     temp_file = "temp_voice.wav"
     save_chunk(audio_data, temp_file)
 
-    # Transcribe what user said
     spoken_text = transcribe_audio(temp_file)
-    print("📝 You said:", spoken_text)
+    print(f"📝 You said: {spoken_text}")
 
     if choice == 'r':
         register_voice(temp_file)
-        print("✅ Voice registered. Restart and login next time.")
-        return
+        print("✅ Voice registered! Restart the app and login.")
+        return False  # Force restart after registration
 
     elif choice == 'l':
-        if not verify_voice(temp_file, spoken_text):
-            print("❌ Access denied.")
-            return
-        else:
+        if verify_voice(temp_file, spoken_text):
             print("✅ Voice + passphrase verified!\n")
+            return True
+        else:
+            print("❌ Access denied. Try again.")
+            return False
 
-    # ---------------- JOURNALING STARTS ---------------- #
 
-    print("📓 Voice Journal Started...")
-    print("🎤 Speak your thoughts. Press Ctrl+C to finish.\n")
+def record_journal():
+    """Record journal audio in chunks, transcribe each, return full transcript."""
+    global TRANSCRIPT
+    TRANSCRIPT = ""
+
+    print("📓 Voice Journal Started!")
+    print("🎤 Speak your thoughts. Press Ctrl+C when you're done.\n")
 
     chunk_index = 0
 
@@ -51,39 +57,60 @@ def run():
         for audio_data in record_audio():
             filename = f"chunks/chunk_{chunk_index}.wav"
             save_chunk(audio_data, filename)
-
             print(f"\n🎧 Processing chunk {chunk_index}...")
 
             try:
                 text = transcribe_audio(filename)
-                print("📝 You said:", text)
-
                 if text.strip():
+                    print(f"📝 You said: {text}")
                     TRANSCRIPT += " " + text
-
             except Exception as e:
-                print("❌ Error:", e)
+                print(f"❌ Transcription error: {e}")
 
             chunk_index += 1
 
     except KeyboardInterrupt:
-        print("\n🛑 Ending journal session...")
+        print("\n🛑 Recording stopped.")
 
-        if len(TRANSCRIPT.strip()) == 0:
-            print("⚠️ No content recorded.")
-            return
+    return TRANSCRIPT.strip()
 
-        print("\n🧠 Generating reflection summary...")
-        summary = generate_summary(TRANSCRIPT)
 
-        print("\n📄 Your Journal Entry:")
-        print(TRANSCRIPT)
+def run():
+    print("=" * 50)
+    print("        🎙️  Voice Journal System")
+    print("=" * 50)
 
-        print("\n✨ Reflection Summary:")
-        print(summary)
+    # Optional: view history before starting
+    view_history = input("\nWould you like to view past entries first? (y/n): ").strip().lower()
+    if view_history == 'y':
+        print_history()
 
-        save_session(summary, TRANSCRIPT)
-        print("\n💾 Journal saved!")
+    # Step 1: Authenticate
+    if not authenticate():
+        return
+
+    # Step 2: Record & Transcribe
+    transcript = record_journal()
+
+    if not transcript:
+        print("⚠️ No content recorded. Session not saved.")
+        return
+
+    # Step 3: Summarize
+    print("\n🧠 Generating reflection summary...")
+    summary = generate_summary(transcript)
+
+    # Step 4: Display results
+    print("\n" + "=" * 50)
+    print("📄 Your Journal Entry:")
+    print(transcript)
+    print("\n✨ Reflection Summary:")
+    print(summary)
+    print("=" * 50)
+
+    # Step 5: Save to SQLite
+    save_session(summary, transcript)
+    print("\n✅ Journal session complete!")
 
 
 if __name__ == "__main__":

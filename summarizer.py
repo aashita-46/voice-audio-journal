@@ -2,17 +2,16 @@ from transformers import pipeline
 
 print("Loading summarization model...")
 
-summarizer = pipeline("text-generation", model="google/flan-t5-base")
+# flan-t5 is a text2text model, must use "text2text-generation" pipeline
+summarizer = pipeline("text2text-generation", model="google/flan-t5-base")
+
 
 def generate_summary(text):
     if len(text.strip()) < 50:
-        return "Not enough content to analyze yet."
+        return "Not enough content to summarize."
 
     try:
-        prompt = f"""
-Summarize this journal entry:
-{text}
-"""
+        prompt = f"Summarize this journal entry and reflect on the mood:\n{text}"
 
         result = summarizer(
             prompt,
@@ -20,8 +19,7 @@ Summarize this journal entry:
             do_sample=False
         )
 
-        output = result[0]['generated_text']
-        return output.replace(prompt, "").strip()
+        return result[0]['generated_text'].strip()
 
     except Exception as e:
-        return f"Error: {e}"
+        return f"Error generating summary: {e}"

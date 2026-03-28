@@ -4,8 +4,8 @@ from scipy.io.wavfile import write
 import queue
 
 SAMPLE_RATE = 16000
-CHUNK_DURATION = 5
-SILENCE_THRESHOLD = 0.01  # adjust if needed
+CHUNK_DURATION = 10
+SILENCE_THRESHOLD = 0.0001  # adjust if needed
 
 audio_queue = queue.Queue()
 

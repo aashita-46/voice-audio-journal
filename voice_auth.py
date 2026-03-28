@@ -5,7 +5,7 @@ import librosa
 from scipy.spatial.distance import cosine
 
 REFERENCE_FILE = "voice_reference.wav"
-PASSPHRASE = "my journal is private"
+PASSPHRASE = "open"
 
 
 def get_voice_embedding(file_path):

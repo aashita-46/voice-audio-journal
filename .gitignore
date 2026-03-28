@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.env
+journal.db
+*.wav
+recordings/
+pretrained_models/

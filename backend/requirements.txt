@@ -1,0 +1,11 @@
+flask
+gunicorn
+numpy
+pydub
+SpeechRecognition
+soundfile
+scipy
+librosa
+transformers
+requests
+python-dotenv

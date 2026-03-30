@@ -1,6 +1,7 @@
-requirements- flask
+flask
 flask-cors
 gunicorn
 whisper
 torch
 transformers
+sqlite3

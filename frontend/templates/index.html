@@ -1,1147 +1,240 @@
-<!DOCTYPE html>
+frontend- <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Journal</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;500&display=swap" rel="stylesheet">
+<title>Sunset Journal</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display&family=Lato&display=swap" rel="stylesheet">
+
 <style>
-  :root {
-    --cream: #F5F0E8;
-    --warm-white: #FAF7F2;
-    --terracotta: #8B4A2E;
-    --terracotta-light: #C4714A;
-    --terracotta-pale: #E8C4B0;
-    --brown-dark: #3D2314;
-    --brown-mid: #6B3A22;
-    --sage: #8B9E7A;
-    --text-primary: #2C1810;
-    --text-secondary: #7A5C4A;
-    --text-muted: #A08070;
-    --card-bg: #FFFFFF;
-    --border: #E8D8CC;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: 'Lato', sans-serif;
-    background: var(--cream);
-    color: var(--text-primary);
-    min-height: 100vh;
-  }
-
-  /* NAV */
-  nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 18px 40px;
-    background: var(--warm-white);
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .nav-logo {
-    font-family: 'Playfair Display', serif;
-    font-style: italic;
-    font-size: 22px;
-    color: var(--terracotta);
-  }
-
-  .nav-links {
-    display: flex;
-    gap: 32px;
-    list-style: none;
-  }
-
-  .nav-links a {
-    text-decoration: none;
-    color: var(--text-secondary);
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 0.3px;
-    cursor: pointer;
-    padding-bottom: 2px;
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s;
-  }
-
-  .nav-links a.active {
-    color: var(--terracotta);
-    border-bottom-color: var(--terracotta);
-  }
-
-  .btn-new-entry {
-    background: var(--terracotta);
-    color: white;
-    border: none;
-    padding: 10px 22px;
-    border-radius: 24px;
-    font-family: 'Lato', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-
-  .btn-new-entry:hover { background: var(--brown-mid); }
-
-  /* SCREENS */
-  .screen { display: none; }
-  .screen.active { display: block; }
-
-  /* ===== WELCOME SCREEN ===== */
-  #screen-welcome {
-    min-height: calc(100vh - 61px);
-    display: none;
-    grid-template-columns: 1fr 1fr;
-    align-items: center;
-    padding: 60px 80px;
-    gap: 60px;
-  }
-  #screen-welcome.active { display: grid; }
-
-  .welcome-text h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: 52px;
-    line-height: 1.15;
-    color: var(--text-primary);
-    margin-bottom: 20px;
-  }
-
-  .welcome-text h1 em {
-    font-style: italic;
-    color: var(--terracotta-light);
-  }
-
-  .welcome-text p {
-    font-size: 16px;
-    color: var(--text-secondary);
-    line-height: 1.7;
-    margin-bottom: 36px;
-    max-width: 420px;
-  }
-
-  .welcome-actions { display: flex; gap: 14px; flex-wrap: wrap; }
-
-  .btn-primary {
-    background: var(--terracotta);
-    color: white;
-    border: none;
-    padding: 14px 28px;
-    border-radius: 8px;
-    font-family: 'Lato', sans-serif;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .btn-primary:hover { background: var(--brown-mid); transform: translateY(-1px); }
-
-  .btn-secondary {
-    background: transparent;
-    color: var(--terracotta);
-    border: 1.5px solid var(--terracotta-pale);
-    padding: 14px 28px;
-    border-radius: 8px;
-    font-family: 'Lato', sans-serif;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .btn-secondary:hover { background: var(--terracotta-pale); }
-
-  .welcome-image {
-    border-radius: 16px;
-    overflow: hidden;
-    height: 420px;
-    background: linear-gradient(135deg, #8B6347, #C4714A, #E8A87C);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-  }
-
-  .welcome-image-inner {
-    width: 100%;
-    height: 100%;
-    background: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600') center/cover;
-    opacity: 0.85;
-  }
-
-  .recording-pill {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    background: white;
-    border-radius: 12px;
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-  }
-
-  .recording-dot {
-    width: 32px;
-    height: 32px;
-    background: var(--terracotta-pale);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .recording-dot svg { width: 16px; height: 16px; fill: var(--terracotta); }
-
-  .recording-info { font-size: 12px; }
-  .recording-info strong { display: block; color: var(--text-primary); font-size: 13px; }
-  .recording-info span { color: var(--text-muted); }
-
-  .waveform-mini {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    margin-top: 6px;
-  }
-
-  .waveform-mini span {
-    display: block;
-    width: 3px;
-    background: var(--terracotta-pale);
-    border-radius: 2px;
-    animation: wave 1s ease-in-out infinite;
-  }
-
-  @keyframes wave {
-    0%, 100% { transform: scaleY(1); }
-    50% { transform: scaleY(2); }
-  }
-
-  /* ===== LOGIN SCREEN ===== */
-  #screen-login {
-    min-height: calc(100vh - 61px);
-    display: none;
-    align-items: center;
-    justify-content: center;
-  }
-  #screen-login.active { display: flex; }
-
-  .login-card {
-    background: var(--card-bg);
-    border-radius: 20px;
-    padding: 50px;
-    width: 420px;
-    text-align: center;
-    border: 1px solid var(--border);
-    box-shadow: 0 8px 40px rgba(139,74,46,0.08);
-  }
-
-  .login-card h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 28px;
-    margin-bottom: 8px;
-    color: var(--text-primary);
-  }
-
-  .login-card p {
-    color: var(--text-secondary);
-    font-size: 14px;
-    margin-bottom: 32px;
-    line-height: 1.6;
-  }
-
-  .passphrase-badge {
-    background: var(--cream);
-    border: 1px dashed var(--terracotta-pale);
-    border-radius: 10px;
-    padding: 14px 20px;
-    font-family: 'Playfair Display', serif;
-    font-style: italic;
-    color: var(--terracotta);
-    font-size: 18px;
-    margin-bottom: 28px;
-  }
-
-  .mic-button {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background: var(--terracotta);
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 20px;
-    transition: all 0.2s;
-    box-shadow: 0 4px 20px rgba(139,74,46,0.3);
-  }
-
-  .mic-button:hover { transform: scale(1.05); }
-  .mic-button.recording { background: var(--brown-dark); animation: pulse 1s ease-in-out infinite; }
-
-  @keyframes pulse {
-    0%, 100% { box-shadow: 0 4px 20px rgba(139,74,46,0.3); }
-    50% { box-shadow: 0 4px 40px rgba(139,74,46,0.6); }
-  }
-
-  .mic-button svg { width: 32px; height: 32px; fill: white; }
-
-  .login-status {
-    font-size: 14px;
-    color: var(--text-muted);
-    margin-bottom: 20px;
-    min-height: 20px;
-  }
-
-  .login-tabs {
-    display: flex;
-    gap: 0;
-    margin-bottom: 28px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .login-tab {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    font-size: 14px;
-    color: var(--text-secondary);
-    font-family: 'Lato', sans-serif;
-    transition: all 0.2s;
-  }
-
-  .login-tab.active {
-    background: var(--terracotta);
-    color: white;
-  }
-
-  /* ===== MEMORIES SCREEN ===== */
-  #screen-memories { padding: 40px 60px; }
-
-  .memories-header { margin-bottom: 32px; }
-  .memories-header h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 36px;
-    color: var(--text-primary);
-    margin-bottom: 6px;
-  }
-  .memories-header p { color: var(--text-secondary); font-size: 15px; }
-
-  .memories-stats {
-    display: grid;
-    grid-template-columns: 1fr 1.8fr;
-    gap: 20px;
-    margin-bottom: 40px;
-  }
-
-  .stat-card {
-    background: var(--card-bg);
-    border-radius: 16px;
-    padding: 28px;
-    border: 1px solid var(--border);
-  }
-
-  .stat-card .stat-icon { font-size: 22px; margin-bottom: 16px; }
-  .stat-card .stat-number {
-    font-family: 'Playfair Display', serif;
-    font-size: 48px;
-    color: var(--text-primary);
-    line-height: 1;
-    margin-bottom: 4px;
-  }
-  .stat-card .stat-label {
-    font-size: 12px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  .summary-card {
-    background: var(--terracotta);
-    border-radius: 16px;
-    padding: 28px;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .summary-card h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    margin-bottom: 8px;
-  }
-
-  .summary-card p { font-size: 14px; opacity: 0.85; margin-bottom: 18px; line-height: 1.5; }
-
-  .btn-play {
-    background: var(--brown-dark);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-family: 'Lato', sans-serif;
-    font-size: 13px;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-
-  .btn-play:hover { background: #2a1a0f; }
-
-  .memories-list h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    margin-bottom: 20px;
-    color: var(--text-primary);
-  }
-
-  .entries-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-  }
-
-  .entry-card {
-    background: var(--card-bg);
-    border-radius: 16px;
-    padding: 20px;
-    border: 1px solid var(--border);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .entry-card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(139,74,46,0.1); }
-
-  .entry-card .entry-date {
-    font-size: 11px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
-  }
-
-  .entry-card .entry-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 18px;
-    color: var(--text-primary);
-    margin-bottom: 12px;
-  }
-
-  .entry-card .entry-preview {
-    font-size: 13px;
-    color: var(--text-secondary);
-    line-height: 1.6;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    margin-bottom: 14px;
-  }
-
-  .entry-card .entry-time {
-    font-size: 12px;
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .no-entries {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text-muted);
-  }
-
-  .no-entries p { font-size: 16px; margin-bottom: 20px; }
-
-  /* ===== RECORDING SCREEN ===== */
-  #screen-recording {
-    min-height: calc(100vh - 61px);
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px;
-  }
-  #screen-recording.active { display: flex; }
-
-  .recording-header { text-align: center; margin-bottom: 48px; }
-  .recording-header h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 36px;
-    margin-bottom: 8px;
-  }
-  .recording-header p { color: var(--text-secondary); font-size: 15px; }
-
-  .timer-circle {
-    width: 160px;
-    height: 160px;
-    border-radius: 50%;
-    background: var(--card-bg);
-    border: 2px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 32px;
-    box-shadow: 0 4px 30px rgba(139,74,46,0.1);
-    position: relative;
-  }
-
-  .timer-circle .mic-icon {
-    font-size: 28px;
-    margin-bottom: 6px;
-  }
-
-  .timer-circle .timer-text {
-    font-family: 'Playfair Display', serif;
-    font-size: 28px;
-    color: var(--text-primary);
-  }
-
-  .waveform {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    height: 50px;
-    margin-bottom: 40px;
-    justify-content: center;
-  }
-
-  .waveform-bar {
-    width: 4px;
-    background: var(--terracotta-pale);
-    border-radius: 2px;
-    transition: height 0.1s;
-  }
-
-  .waveform-bar.active { background: var(--terracotta); }
-
-  .recording-controls {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-  }
-
-  .ctrl-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    border: none;
-    background: transparent;
-    font-family: 'Lato', sans-serif;
-  }
-
-  .ctrl-btn .ctrl-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    border: 1.5px solid var(--border);
-    background: var(--card-bg);
-    transition: all 0.2s;
-  }
-
-  .ctrl-btn:hover .ctrl-icon { border-color: var(--terracotta-pale); }
-
-  .ctrl-btn.finish .ctrl-icon {
-    background: var(--terracotta);
-    border-color: var(--terracotta);
-    font-size: 22px;
-    width: 64px;
-    height: 64px;
-  }
-
-  .ctrl-btn .ctrl-label {
-    font-size: 11px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  .live-transcript {
-    max-width: 600px;
-    margin: 32px auto 0;
-    background: var(--card-bg);
-    border-radius: 12px;
-    padding: 20px;
-    border: 1px solid var(--border);
-    max-height: 150px;
-    overflow-y: auto;
-  }
-
-  .live-transcript p {
-    font-size: 14px;
-    color: var(--text-secondary);
-    line-height: 1.7;
-  }
-
-  /* ===== ENTRY DETAIL SCREEN ===== */
-  #screen-entry { padding: 40px 60px; }
-
-  .entry-detail-header { margin-bottom: 28px; }
-  .entry-detail-header .entry-meta {
-    font-size: 12px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 10px;
-  }
-
-  .entry-detail-header h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 40px;
-    color: var(--text-primary);
-    margin-bottom: 8px;
-  }
-
-  .entry-detail-header .entry-tagline {
-    font-style: italic;
-    color: var(--text-secondary);
-    font-size: 15px;
-    margin-bottom: 16px;
-  }
-
-  .entry-detail-body {
-    display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    gap: 28px;
-  }
-
-  .transcript-section {
-    background: var(--card-bg);
-    border-radius: 16px;
-    padding: 28px;
-    border: 1px solid var(--border);
-  }
-
-  .transcript-section h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 20px;
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .transcript-text {
-    font-size: 15px;
-    color: var(--text-secondary);
-    line-height: 1.8;
-  }
-
-  .reflection-section {
-    background: #EEF3E6;
-    border-radius: 16px;
-    padding: 24px;
-    border: 1px solid #D4E0C4;
-  }
-
-  .reflection-section .reflection-label {
-    font-size: 11px;
-    color: var(--sage);
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .reflection-section h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 18px;
-    color: var(--text-primary);
-    margin-bottom: 12px;
-  }
-
-  .reflection-section p {
-    font-size: 14px;
-    color: var(--text-secondary);
-    line-height: 1.7;
-    margin-bottom: 20px;
-  }
-
-  .reflection-prompt {
-    background: white;
-    border-radius: 10px;
-    padding: 14px 16px;
-    border-left: 3px solid var(--sage);
-  }
-
-  .reflection-prompt .prompt-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--sage);
-    margin-bottom: 6px;
-  }
-
-  .reflection-prompt p {
-    font-style: italic;
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin: 0;
-    line-height: 1.5;
-  }
-
-  .back-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--text-secondary);
-    font-size: 14px;
-    cursor: pointer;
-    margin-bottom: 24px;
-    border: none;
-    background: none;
-    font-family: 'Lato', sans-serif;
-    transition: color 0.2s;
-  }
-
-  .back-btn:hover { color: var(--terracotta); }
-
-  /* STATUS MESSAGES */
-  .status-msg {
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-size: 14px;
-    margin-top: 16px;
-    display: none;
-  }
-  .status-msg.success { background: #EEF3E6; color: #3B6D11; display: block; }
-  .status-msg.error { background: #FCEBEB; color: #A32D2D; display: block; }
-  .status-msg.info { background: #E6F1FB; color: #185FA5; display: block; }
+body {
+  margin:0;
+  font-family:Lato;
+  background:#F5F0E8;
+}
+
+nav {
+  padding:15px;
+  display:flex;
+  justify-content:space-between;
+  background:white;
+}
+
+.screen { display:none; padding:20px; }
+.active { display:block; }
+
+button {
+  padding:10px 16px;
+  border:none;
+  border-radius:6px;
+  background:#8B4A2E;
+  color:white;
+  cursor:pointer;
+}
+
+#login-card {
+  max-width:350px;
+  margin:auto;
+  text-align:center;
+}
+
+textarea {
+  width:100%;
+}
+
+@media(max-width:768px){
+  h1{font-size:24px}
+}
 </style>
 </head>
+
 <body>
 
 <nav>
-  <div class="nav-logo">Sunset Journal</div>
-  <ul class="nav-links" id="nav-links" style="display:none">
-    <li><a onclick="showScreen('memories')" id="nav-memories">Memories</a></li>
-    <li><a onclick="showScreen('welcome')" id="nav-home">Library</a></li>
-    <li><a href="#">Settings</a></li>
-  </ul>
-  <button class="btn-new-entry" id="btn-new-entry" style="display:none" onclick="showScreen('recording'); startRecording()">+ New Entry</button>
+  <div>Sunset Journal</div>
+  <button onclick="showScreen('record')">New Entry</button>
 </nav>
 
-<!-- WELCOME SCREEN -->
-<div class="screen active" id="screen-welcome">
-  <div class="welcome-text">
-    <h1>Speak your <em>peace</em> into the evening.</h1>
-    <p>Sunset Hearth is a sanctuary for your thoughts. Capture the essence of your day through the warmth of your own voice.</p>
-    <div class="welcome-actions">
-      <button class="btn-primary" onclick="showScreen('login'); setLoginMode('login')">Start Your Journal</button>
-      <button class="btn-secondary" onclick="showScreen('login'); setLoginMode('register')">Register Voice</button>
-    </div>
-  </div>
-  <div class="welcome-image">
-    <div class="welcome-image-inner"></div>
-    <div class="recording-pill">
-      <div class="recording-dot">
-        <svg viewBox="0 0 24 24"><path d="M12 1a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm-7 10a7 7 0 0 0 14 0h2a9 9 0 0 1-8 8.94V22h-2v-2.06A9 9 0 0 1 3 11h2z"/></svg>
-      </div>
-      <div class="recording-info">
-        <strong>Recording Evening Reflection</strong>
-        <span>02:14 / 05:00</span>
-        <div class="waveform-mini">
-          <span style="height:8px;animation-delay:0s"></span>
-          <span style="height:14px;animation-delay:0.1s"></span>
-          <span style="height:6px;animation-delay:0.2s"></span>
-          <span style="height:12px;animation-delay:0.3s"></span>
-          <span style="height:10px;animation-delay:0.4s"></span>
-          <span style="height:16px;animation-delay:0.5s"></span>
-          <span style="height:8px;animation-delay:0.6s"></span>
-        </div>
-      </div>
-    </div>
+<div id="screen-login" class="screen active">
+  <div id="login-card">
+    <h2>Login</h2>
+    <button onclick="recordAuth()">Tap to Speak</button>
+    <p id="login-status"></p>
   </div>
 </div>
 
-<!-- LOGIN SCREEN -->
-<div class="screen" id="screen-login">
-  <div class="login-card">
-    <h2 id="login-title">Welcome Back</h2>
-    <p id="login-desc">Say the passphrase below to unlock your journal</p>
-
-    <div class="login-tabs">
-      <button class="login-tab active" id="tab-login" onclick="setLoginMode('login')">Login</button>
-      <button class="login-tab" id="tab-register" onclick="setLoginMode('register')">Register</button>
-    </div>
-
-    <div class="passphrase-badge" id="passphrase-display">"open"</div>
-
-    <button class="mic-button" id="login-mic-btn" onclick="handleLoginMic()">
-      <svg viewBox="0 0 24 24"><path d="M12 1a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm-7 10a7 7 0 0 0 14 0h2a9 9 0 0 1-8 8.94V22h-2v-2.06A9 9 0 0 1 3 11h2z"/></svg>
-    </button>
-
-    <div class="login-status" id="login-status">Click the mic and say the passphrase</div>
-    <div class="status-msg" id="login-msg"></div>
-  </div>
+<div id="screen-record" class="screen">
+  <h2>Recording</h2>
+  <button onclick="startRecording()">Start</button>
+  <button onclick="finishRecording()">Finish</button>
+  <p id="live-text"></p>
 </div>
 
-<!-- MEMORIES SCREEN -->
-<div class="screen" id="screen-memories">
-  <div class="memories-header">
-    <h2>Sunset Hearth</h2>
-    <p>Welcome back to your sanctuary. A collection of your thoughts, captured in the warmth of the evening light.</p>
-  </div>
-
-  <div class="memories-stats">
-    <div class="stat-card">
-      <div class="stat-icon">✦</div>
-      <div class="stat-number" id="entry-count">0</div>
-      <div class="stat-label">Captured Moments</div>
-    </div>
-    <div class="summary-card">
-      <div>
-        <h3>Listen to Your Week</h3>
-        <p>Your audio journey from the last 7 days is ready for a mindful review.</p>
-        <button class="btn-play" onclick="showScreen('memories')">Play Summary</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="memories-list">
-    <h3>Recent Memories</h3>
-    <div class="entries-grid" id="entries-grid">
-      <div class="no-entries">
-        <p>No journal entries yet.</p>
-        <button class="btn-primary" onclick="showScreen('recording'); startRecording()">Record your first entry</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- RECORDING SCREEN -->
-<div class="screen" id="screen-recording">
-  <div class="recording-header">
-    <h2>Sunset Hearth</h2>
-    <p>Sharing your thoughts with the silence.</p>
-  </div>
-
-  <div class="timer-circle">
-    <div class="mic-icon">🎙️</div>
-    <div class="timer-text" id="timer-display">00:00</div>
-  </div>
-
-  <div class="waveform" id="waveform">
-    <div class="waveform-bar" style="height:10px"></div>
-    <div class="waveform-bar" style="height:20px"></div>
-    <div class="waveform-bar" style="height:14px"></div>
-    <div class="waveform-bar" style="height:30px"></div>
-    <div class="waveform-bar" style="height:18px"></div>
-    <div class="waveform-bar" style="height:24px"></div>
-    <div class="waveform-bar" style="height:12px"></div>
-    <div class="waveform-bar" style="height:28px"></div>
-    <div class="waveform-bar" style="height:16px"></div>
-    <div class="waveform-bar" style="height:22px"></div>
-    <div class="waveform-bar" style="height:10px"></div>
-    <div class="waveform-bar" style="height:18px"></div>
-  </div>
-
-  <div class="recording-controls">
-    <button class="ctrl-btn" onclick="togglePause()">
-      <div class="ctrl-icon" id="pause-icon">⏸</div>
-      <span class="ctrl-label" id="pause-label">Pause</span>
-    </button>
-    <button class="ctrl-btn finish" onclick="finishRecording()">
-      <div class="ctrl-icon">✓</div>
-      <span class="ctrl-label">Finish</span>
-    </button>
-    <button class="ctrl-btn" onclick="discardRecording()">
-      <div class="ctrl-icon">✕</div>
-      <span class="ctrl-label">Discard</span>
-    </button>
-  </div>
-
-  <div class="live-transcript">
-    <p id="live-transcript-text">Start speaking... your words will appear here.</p>
-  </div>
-</div>
-
-<!-- ENTRY DETAIL SCREEN -->
-<div class="screen" id="screen-entry">
-  <button class="back-btn" onclick="showScreen('memories'); loadEntries()">← Back to Memories</button>
-  <div class="entry-detail-header">
-    <div class="entry-meta" id="detail-meta"></div>
-    <h2 id="detail-title">Journal Entry</h2>
-    <div class="entry-tagline" id="detail-tagline"></div>
-  </div>
-  <div class="entry-detail-body">
-    <div class="transcript-section">
-      <h3>Transcript</h3>
-      <div class="transcript-text" id="detail-transcript"></div>
-    </div>
-    <div class="reflection-section">
-      <div class="reflection-label">✦ Sanctuary Reflection</div>
-      <p id="detail-summary"></p>
-      <div class="reflection-prompt">
-        <div class="prompt-label">Reflection Prompt</div>
-        <p>"What emotions came up most strongly during this entry?"</p>
-      </div>
-    </div>
-  </div>
+<div id="screen-history" class="screen">
+  <h2>History</h2>
+  <div id="entries"></div>
 </div>
 
 <script>
-  let isAuthenticated = false;
-  let loginMode = 'login';
-  let mediaRecorder = null;
-  let audioChunks = [];
-  let timerInterval = null;
-  let seconds = 0;
-  let isPaused = false;
-  let chunkInterval = null;
-  let waveInterval = null;
-  let isLoginRecording = false;
+const BASE_URL = "https://YOUR-RENDER-URL.onrender.com";
 
-  function showScreen(name) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById('screen-' + name).classList.add('active');
+let isAuthenticated = localStorage.getItem("auth")==="true";
+let mediaRecorder;
+let stream;
+let chunkInterval;
 
-    const navLinks = document.getElementById('nav-links');
-    const btnNew = document.getElementById('btn-new-entry');
+// navigation
+function showScreen(name){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById("screen-"+name).classList.add("active");
 
-    if (isAuthenticated) {
-      navLinks.style.display = 'flex';
-      btnNew.style.display = 'block';
-    }
+  if(name==="history") loadHistory();
+}
 
-    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-    if (name === 'memories') {
-      document.getElementById('nav-memories').classList.add('active');
-      loadEntries();
-    }
-  }
+// auth
+async function recordAuth(){
+  const status = document.getElementById("login-status");
 
-  function setLoginMode(mode) {
-    loginMode = mode;
-    document.getElementById('tab-login').classList.toggle('active', mode === 'login');
-    document.getElementById('tab-register').classList.toggle('active', mode === 'register');
-    document.getElementById('login-title').textContent = mode === 'login' ? 'Welcome Back' : 'Register Your Voice';
-    document.getElementById('login-desc').textContent = mode === 'login'
-      ? 'Say the passphrase below to unlock your journal'
-      : 'Say the passphrase to register your voice';
-    document.getElementById('login-status').textContent = 'Click the mic and say the passphrase';
-    document.getElementById('login-msg').className = 'status-msg';
-  }
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    const recorder = new MediaRecorder(stream,{mimeType:"audio/webm"});
+    let chunks=[];
 
-  async function handleLoginMic() {
-    if (isLoginRecording) return;
-    isLoginRecording = true;
+    recorder.ondataavailable=e=>chunks.push(e.data);
 
-    const btn = document.getElementById('login-mic-btn');
-    const status = document.getElementById('login-status');
-    btn.classList.add('recording');
-    status.textContent = '🔴 Recording... speak now';
+    recorder.onstop=async ()=>{
+      const blob = new Blob(chunks,{type:"audio/webm"});
+      const fd = new FormData();
+      fd.append("audio",blob,"auth.webm");
 
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
-      const chunks = [];
+      status.innerText="Processing...";
 
-      recorder.ondataavailable = e => chunks.push(e.data);
-      recorder.onstop = async () => {
-        stream.getTracks().forEach(t => t.stop());
-        const blob = new Blob(chunks, { type: 'audio/wav' });
-        const formData = new FormData();
-        formData.append('audio', blob, 'auth.wav');
+      try{
+        const res = await fetch(`${BASE_URL}/api/login`,{
+          method:"POST",
+          body:fd
+        });
 
-        status.textContent = '⏳ Processing...';
+        const data = await res.json();
 
-        const endpoint = loginMode === 'register' ? '/api/register' : '/api/login';
-        try {
-          const res = await fetch(endpoint, { method: 'POST', body: formData });
-          const data = await res.json();
-          const msg = document.getElementById('login-msg');
-
-          if (data.success) {
-            msg.className = 'status-msg success';
-            msg.textContent = data.message;
-            if (loginMode === 'login') {
-              isAuthenticated = true;
-              setTimeout(() => { showScreen('memories'); }, 1000);
-            } else {
-              status.textContent = 'Voice registered! Now login.';
-              setTimeout(() => setLoginMode('login'), 2000);
-            }
-          } else {
-            msg.className = 'status-msg error';
-            msg.textContent = data.message;
-            status.textContent = 'Try again';
-          }
-        } catch (err) {
-          document.getElementById('login-msg').className = 'status-msg error';
-          document.getElementById('login-msg').textContent = 'Connection error. Is Flask running?';
+        if(data.success){
+          localStorage.setItem("auth","true");
+          showScreen("record");
+        }else{
+          status.innerText=data.message;
         }
 
-        btn.classList.remove('recording');
-        isLoginRecording = false;
+      }catch(e){
+        console.error(e);
+        status.innerText="Server error";
+      }
+    };
+
+    recorder.start();
+    setTimeout(()=>recorder.stop(),4000);
+
+  }catch(e){
+    status.innerText="Mic denied";
+  }
+}
+
+// recording
+async function startRecording(){
+  document.getElementById("live-text").innerText="Recording...";
+
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({audio:true});
+
+    const sendChunk = ()=>{
+      const recorder = new MediaRecorder(stream,{mimeType:"audio/webm"});
+      let chunks=[];
+
+      recorder.ondataavailable=e=>chunks.push(e.data);
+
+      recorder.onstop=async ()=>{
+        const blob = new Blob(chunks,{type:"audio/webm"});
+        const fd = new FormData();
+        fd.append("audio",blob,"chunk.webm");
+
+        try{
+          const res = await fetch(`${BASE_URL}/api/record_chunk`,{
+            method:"POST",
+            body:fd
+          });
+
+          const data = await res.json();
+
+          if(data.success){
+            document.getElementById("live-text").innerText=data.full_transcript;
+          }
+
+        }catch(e){
+          console.error(e);
+        }
       };
 
       recorder.start();
-      setTimeout(() => recorder.stop(), 5000);
-    } catch (err) {
-      status.textContent = '❌ Mic access denied';
-      btn.classList.remove('recording');
-      isLoginRecording = false;
+      setTimeout(()=>recorder.stop(),5000);
+    };
+
+    sendChunk();
+    chunkInterval = setInterval(sendChunk,6000);
+
+  }catch(e){
+    alert("Mic error");
+  }
+}
+
+async function finishRecording(){
+  clearInterval(chunkInterval);
+  if(stream) stream.getTracks().forEach(t=>t.stop());
+
+  try{
+    const res = await fetch(`${BASE_URL}/api/finish`,{
+      method:"POST"
+    });
+
+    const data = await res.json();
+
+    if(data.success){
+      alert("Saved");
+      showScreen("history");
+    }else{
+      alert(data.message);
     }
+
+  }catch(e){
+    console.error(e);
   }
+}
 
-  async function startRecording() {
-    seconds = 0;
-    isPaused = false;
-    document.getElementById('live-transcript-text').textContent = 'Start speaking... your words will appear here.';
-    document.getElementById('timer-display').textContent = '00:00';
+// history
+async function loadHistory(){
+  const container = document.getElementById("entries");
 
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  try{
+    const res = await fetch(`${BASE_URL}/api/history`);
+    const data = await res.json();
 
-      timerInterval = setInterval(() => {
-        if (!isPaused) {
-          seconds++;
-          const m = String(Math.floor(seconds / 60)).padStart(2, '0');
-          const s = String(seconds % 60).padStart(2, '0');
-          document.getElementById('timer-display').textContent = m + ':' + s;
-        }
-      }, 1000);
+    container.innerHTML = data.entries.map(e=>`
+      <div style="background:white;padding:10px;margin:10px 0;border-radius:6px">
+        <b>${e.timestamp}</b>
+        <p>${e.transcript}</p>
+        <i>${e.summary}</i>
+      </div>
+    `).join("");
 
-      animateWaveform();
-
-      const sendChunk = () => {
-        if (isPaused) return;
-        const recorder = new MediaRecorder(stream);
-        const chunks = [];
-        recorder.ondataavailable = e => chunks.push(e.data);
-        recorder.onstop = async () => {
-          const blob = new Blob(chunks, { type: 'audio/wav' });
-          const formData = new FormData();
-          formData.append('audio', blob, 'chunk.wav');
-          try {
-            const res = await fetch('/api/record_chunk', { method: 'POST', body: formData });
-            const data = await res.json();
-            if (data.success && data.text) {
-              document.getElementById('live-transcript-text').textContent = data.full_transcript || data.text;
-            }
-          } catch (e) {}
-        };
-        recorder.start();
-        setTimeout(() => recorder.stop(), 8000);
-      };
-
-      sendChunk();
-      chunkInterval = setInterval(sendChunk, 9000);
-
-      window._activeStream = stream;
-    } catch (err) {
-      alert('Microphone access denied. Please allow mic access and try again.');
-    }
+  }catch(e){
+    console.error(e);
   }
+}
 
-  function animateWaveform() {
-    const bars = document.querySelectorAll('.waveform-bar');
-    waveInterval = setInterval(() => {
-      if (!isPaused) {
-        bars.forEach(bar => {
-          const h = Math.random() * 40 + 5;
-          bar.style.height = h + 'px';
-          bar.classList.toggle('active', Math.random() > 0.4);
-        });
-      }
-    }, 150);
-  }
-
-  function togglePause() {
-    isPaused = !isPaused;
-    document.getElementById('pause-icon').textContent = isPaused ? '▶' : '⏸';
-    document.getElementById('pause-label').textContent = isPaused ? 'Resume' : 'Pause';
-  }
-
-  async function finishRecording() {
-    clearInterval(timerInterval);
-    clearInterval(chunkInterval);
-    clearInterval(waveInterval);
-    if (window._activeStream) window._activeStream.getTracks().forEach(t => t.stop());
-
-    try {
-      const res = await fetch('/api/finish', { method: 'POST' });
-      const data = await res.json();
-      if (data.success) {
-        showEntryDetail({
-          timestamp: new Date().toLocaleString(),
-          transcript: data.transcript,
-          summary: data.summary
-        });
-      } else {
-        alert(data.message || 'Could not finish session');
-        showScreen('memories');
-      }
-    } catch (err) {
-      alert('Error connecting to server.');
-    }
-  }
-
-  async function discardRecording() {
-    clearInterval(timerInterval);
-    clearInterval(chunkInterval);
-    clearInterval(waveInterval);
-    if (window._activeStream) window._activeStream.getTracks().forEach(t => t.stop());
-    await fetch('/api/discard', { method: 'POST' });
-    showScreen('memories');
-  }
-
-  async function loadEntries() {
-    try {
-      const res = await fetch('/api/history');
-      const data = await res.json();
-      const grid = document.getElementById('entries-grid');
-      document.getElementById('entry-count').textContent = data.entries.length;
-
-      if (!data.entries.length) {
-        grid.innerHTML = `<div class="no-entries"><p>No journal entries yet.</p><button class="btn-primary" onclick="showScreen('recording'); startRecording()">Record your first entry</button></div>`;
-        return;
-      }
-
-      grid.innerHTML = data.entries.map((e, i) => `
-        <div class="entry-card" onclick="showEntryDetail(${JSON.stringify(e).replace(/"/g, '&quot;')})">
-          <div class="entry-date">${e.timestamp}</div>
-          <div class="entry-title">Journal Entry ${data.entries.length - i}</div>
-          <div class="entry-preview">${e.transcript}</div>
-          <div class="entry-time">🕐 ${e.timestamp.split(' ')[1] || ''}</div>
-        </div>
-      `).join('');
-    } catch (err) {
-      console.error('Could not load entries:', err);
-    }
-  }
-
-  function showEntryDetail(entry) {
-    document.getElementById('detail-meta').textContent = entry.timestamp;
-    document.getElementById('detail-title').textContent = 'Journal Entry';
-    document.getElementById('detail-tagline').textContent = entry.summary ? entry.summary.substring(0, 80) + '...' : '';
-    document.getElementById('detail-transcript').textContent = entry.transcript;
-    document.getElementById('detail-summary').textContent = entry.summary;
-    showScreen('entry');
-  }
+// auto login
+if(isAuthenticated){
+  showScreen("record");
+}
 </script>
+
 </body>
 </html>

@@ -1,12 +1,7 @@
-flask
+requirements- flask
 flask-cors
 gunicorn
-numpy
-pydub
-SpeechRecognition
-soundfile
-scipy
-librosa
+whisper
+torch
 transformers
-requests
-python-dotenv
+sqlite3

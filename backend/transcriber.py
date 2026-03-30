@@ -1,13 +1,7 @@
-import whisper
-import os
+transcriber.py- import whisper
 
-# Add ffmpeg to PATH (update this path if needed)
-os.environ["PATH"] += os.pathsep + r"C:\Users\Ninad Naik\OneDrive\Pictures\ffmpeg\bin"
+model = whisper.load_model("tiny")
 
-print("Loading Whisper model...")
-model = whisper.load_model("base")
-
-
-def transcribe_audio(file_path):
-    result = model.transcribe(file_path)
+def transcribe_audio(path):
+    result = model.transcribe(path)
     return result["text"]

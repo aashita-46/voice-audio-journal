@@ -1,6 +1,6 @@
 flask
 flask-cors
 gunicorn
-whisper
 torch
 transformers
+openai-whisper==20231117

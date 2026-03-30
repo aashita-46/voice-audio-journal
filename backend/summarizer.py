@@ -1,4 +1,4 @@
-summarizer.py- from transformers import pipeline
+from transformers import pipeline
 
 summarizer = pipeline("text2text-generation", model="google/flan-t5-small")
 

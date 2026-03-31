@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sunset Journal</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display&family=Lato&display=swap" rel="stylesheet">
+
+<style>
+body {
+  margin:0;
+  font-family:Lato;
+  background:#F5F0E8;
+}
+
+nav {
+  padding:15px;
+  display:flex;
+  justify-content:space-between;
+  background:white;
+}
+
+.screen { display:none; padding:20px; }
+.active { display:block; }
+
+button {
+  padding:10px 16px;
+  border:none;
+  border-radius:6px;
+  background:#8B4A2E;
+  color:white;
+  cursor:pointer;
+}
+
+#login-card {
+  max-width:350px;
+  margin:auto;
+  text-align:center;
+}
+
+textarea {
+  width:100%;
+}
+
+@media(max-width:768px){
+  h1{font-size:24px}
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+  <div>Sunset Journal</div>
+  <button onclick="showScreen('record')">New Entry</button>
+</nav>
+
+<div id="screen-login" class="screen active">
+  <div id="login-card">
+    <h2>Login</h2>
+    <button onclick="recordAuth()">Tap to Speak</button>
+    <p id="login-status"></p>
+  </div>
+</div>
+
+<div id="screen-record" class="screen">
+  <h2>Recording</h2>
+  <button onclick="startRecording()">Start</button>
+  <button onclick="finishRecording()">Finish</button>
+  <p id="live-text"></p>
+</div>
+
+<div id="screen-history" class="screen">
+  <h2>History</h2>
+  <div id="entries"></div>
+</div>
+
+<script>
+const BASE_URL = "https://YOUR-RENDER-URL.onrender.com";
+
+let isAuthenticated = localStorage.getItem("auth")==="true";
+let mediaRecorder;
+let stream;
+let chunkInterval;
+
+// navigation
+function showScreen(name){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById("screen-"+name).classList.add("active");
+
+  if(name==="history") loadHistory();
+}
+
+// auth
+async function recordAuth(){
+  const status = document.getElementById("login-status");
+
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    const recorder = new MediaRecorder(stream,{mimeType:"audio/webm"});
+    let chunks=[];
+
+    recorder.ondataavailable=e=>chunks.push(e.data);
+
+    recorder.onstop=async ()=>{
+      const blob = new Blob(chunks,{type:"audio/webm"});
+      const fd = new FormData();
+      fd.append("audio",blob,"auth.webm");
+
+      status.innerText="Processing...";
+
+      try{
+        const res = await fetch(`${BASE_URL}/api/login`,{
+          method:"POST",
+          body:fd
+        });
+
+        const data = await res.json();
+
+        if(data.success){
+          localStorage.setItem("auth","true");
+          showScreen("record");
+        }else{
+          status.innerText=data.message;
+        }
+
+      }catch(e){
+        console.error(e);
+        status.innerText="Server error";
+      }
+    };
+
+    recorder.start();
+    setTimeout(()=>recorder.stop(),4000);
+
+  }catch(e){
+    status.innerText="Mic denied";
+  }
+}
+
+// recording
+async function startRecording(){
+  document.getElementById("live-text").innerText="Recording...";
+
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({audio:true});
+
+    const sendChunk = ()=>{
+      const recorder = new MediaRecorder(stream,{mimeType:"audio/webm"});
+      let chunks=[];
+
+      recorder.ondataavailable=e=>chunks.push(e.data);
+
+      recorder.onstop=async ()=>{
+        const blob = new Blob(chunks,{type:"audio/webm"});
+        const fd = new FormData();
+        fd.append("audio",blob,"chunk.webm");
+
+        try{
+          const res = await fetch(`${BASE_URL}/api/record_chunk`,{
+            method:"POST",
+            body:fd
+          });
+
+          const data = await res.json();
+
+          if(data.success){
+            document.getElementById("live-text").innerText=data.full_transcript;
+          }
+
+        }catch(e){
+          console.error(e);
+        }
+      };
+
+      recorder.start();
+      setTimeout(()=>recorder.stop(),5000);
+    };
+
+    sendChunk();
+    chunkInterval = setInterval(sendChunk,6000);
+
+  }catch(e){
+    alert("Mic error");
+  }
+}
+
+async function finishRecording(){
+  clearInterval(chunkInterval);
+  if(stream) stream.getTracks().forEach(t=>t.stop());
+
+  try{
+    const res = await fetch(`${BASE_URL}/api/finish`,{
+      method:"POST"
+    });
+
+    const data = await res.json();
+
+    if(data.success){
+      alert("Saved");
+      showScreen("history");
+    }else{
+      alert(data.message);
+    }
+
+  }catch(e){
+    console.error(e);
+  }
+}
+
+// history
+async function loadHistory(){
+  const container = document.getElementById("entries");
+
+  try{
+    const res = await fetch(`${BASE_URL}/api/history`);
+    const data = await res.json();
+
+    container.innerHTML = data.entries.map(e=>`
+      <div style="background:white;padding:10px;margin:10px 0;border-radius:6px">
+        <b>${e.timestamp}</b>
+        <p>${e.transcript}</p>
+        <i>${e.summary}</i>
+      </div>
+    `).join("");
+
+  }catch(e){
+    console.error(e);
+  }
+}
+
+// auto login
+if(isAuthenticated){
+  showScreen("record");
+}
+</script>
+
+</body>
+</html>

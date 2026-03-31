@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import os
 
@@ -6,9 +6,7 @@ from transcriber import transcribe_audio
 from summarizer import generate_summary
 from history import save_session, get_all_sessions, init_db
 
-app = Flask(__name__)
-
-# Allow your Vercel frontend
+app = Flask(__name__, template_folder='templates')
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 init_db()
@@ -16,6 +14,11 @@ os.makedirs("chunks", exist_ok=True)
 
 TRANSCRIPT = ""
 chunk_index = 0
+
+
+@app.route("/")
+def index():
+    return render_template("index.html")
 
 
 @app.route("/api/health")
@@ -137,4 +140,4 @@ def history():
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)

@@ -1,8 +1,7 @@
+import whisper
 import os
-import sys
-sys.path.insert(0, "/opt/render/project/src")
 
-import openai_whisper as whisper
+os.environ["PATH"] += os.pathsep + r"C:\Users\HP\Downloads\ffmpeg\bin"
 
 model = whisper.load_model("tiny")
 

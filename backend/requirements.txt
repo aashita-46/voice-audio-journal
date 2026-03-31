@@ -1,6 +1,10 @@
 flask
 flask-cors
 gunicorn
+openai-whisper
 torch
 transformers
-openai-whisper==20231117
+numpy
+scipy
+sounddevice
+librosa
